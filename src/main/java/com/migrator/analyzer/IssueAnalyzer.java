@@ -78,7 +78,6 @@ public class IssueAnalyzer {
         if (issue.getLabels() != null && !issue.getLabels().isEmpty()) {
             LabelMapper.LabelMappingResult labelResult = labelMapper.mapLabels(issue.getLabels());
             config.addLabels(labelResult.getLabels());
-            System.out.println(" .... " + labelResult.getComponents());
             config.addComponents(labelResult.getComponents());
             
             if (labelResult.getDetectedPriority() != null) {

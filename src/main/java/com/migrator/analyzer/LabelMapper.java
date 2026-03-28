@@ -241,7 +241,6 @@ public class LabelMapper {
             boolean mapped = false;
 
             for (Map.Entry<Pattern, LabelMapping> entry : LABEL_MAPPINGS.entrySet()) {
-                System.out.println(" => " + entry.getKey() + " - " + labelName);
                 if (entry.getKey().matcher(labelName).matches()) {
                     LabelMapping mapping = entry.getValue();
                     result.addLabel(mapping.jiraLabel);
