@@ -105,7 +105,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaCore_shouldMapToCoreComponent() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:core")
+                new GitHubLabel("area/core")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -116,7 +116,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaKubernetes_shouldMapToCloudInfrastructure() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:kubernetes")
+                new GitHubLabel("area/kubernetes")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -127,7 +127,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaSecurity_shouldMapToSecurityComponent() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:security")
+                new GitHubLabel("area/security")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -138,7 +138,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaHibernateORM_shouldMapToPersistence() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:hibernate-orm")
+                new GitHubLabel("area/hibernate-orm")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -149,7 +149,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaRest_shouldMapToRestAndAPIs() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:rest")
+                new GitHubLabel("area/rest")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -160,7 +160,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaGraphQL_shouldMapToRestAndAPIs() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:graphql")
+                new GitHubLabel("area/graphql")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -171,7 +171,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaKafka_shouldMapToMessaging() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:kafka")
+                new GitHubLabel("area/kafka")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -182,7 +182,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaVertx_shouldMapToReactive() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:vertx")
+                new GitHubLabel("area/vertx")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -193,7 +193,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaTracing_shouldMapToObservability() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:tracing")
+                new GitHubLabel("area/tracing")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -204,7 +204,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaHealth_shouldMapToObservability() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:health")
+                new GitHubLabel("area/health")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -215,7 +215,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaMetrics_shouldMapToObservability() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:metrics")
+                new GitHubLabel("area/metrics")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -226,7 +226,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaJaeger_shouldMapToObservability() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:jaeger")
+                new GitHubLabel("area/jaeger")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -237,7 +237,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaMongoDB_shouldMapToNoSQL() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:mongodb")
+                new GitHubLabel("area/mongodb")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -248,7 +248,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaRedis_shouldMapToNoSQL() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:redis")
+                new GitHubLabel("area/redis")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -259,7 +259,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaElasticsearch_shouldMapToNoSQL() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:elasticsearch")
+                new GitHubLabel("area/elasticsearch")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -270,7 +270,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaMaven_shouldMapToBuildAndTooling() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:maven")
+                new GitHubLabel("area/maven")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -281,7 +281,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaDevmode_shouldMapToDeveloperExperience() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:devmode")
+                new GitHubLabel("area/devmode")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -292,7 +292,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaConfig_shouldMapToConfigurationAndLogging() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:config")
+                new GitHubLabel("area/config")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -303,7 +303,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaNarayana_shouldMapToTransactions() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:narayana")
+                new GitHubLabel("area/narayana")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -314,7 +314,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaAmazonLambda_shouldMapToFunctions() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:amazon-lambda")
+                new GitHubLabel("area/amazon-lambda")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -325,7 +325,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaNativeImage_shouldMapToNativeAndPerformance() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:native-image")
+                new GitHubLabel("area/native-image")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -336,7 +336,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaKotlin_shouldMapToLanguages() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:kotlin")
+                new GitHubLabel("area/kotlin")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -347,7 +347,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaGrpc_shouldMapToGrpc() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:grpc")
+                new GitHubLabel("area/grpc")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -358,7 +358,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaJackson_shouldMapToSerialization() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:jackson")
+                new GitHubLabel("area/jackson")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -369,7 +369,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withKindExtensionProposal_shouldMapCorrectly() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("kind:extension-proposal")
+                new GitHubLabel("kind/extension-proposal")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -402,7 +402,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withTriageNeedingInvestigation_shouldMapCorrectly() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("triage:needs-investigation")
+                new GitHubLabel("triage/needs-investigation")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -413,7 +413,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withPriorityCritical_shouldSetHighestPriority() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("priority:critical")
+                new GitHubLabel("priority/critical")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -425,7 +425,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaOIDC_shouldMapToSecurity() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:oidc")
+                new GitHubLabel("area/oidc")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -437,9 +437,9 @@ class LabelMapperTest {
     void mapLabels_withMultipleLabels_shouldMapAllToAggregatedComponents() {
         List<GitHubLabel> labels = Arrays.asList(
                 new GitHubLabel("bug"),
-                new GitHubLabel("area:core"),
-                new GitHubLabel("area:hibernate-orm"),
-                new GitHubLabel("area:oidc")
+                new GitHubLabel("area/core"),
+                new GitHubLabel("area/hibernate-orm"),
+                new GitHubLabel("area/oidc")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -530,7 +530,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaFlyway_shouldMapToPersistence() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:flyway")
+                new GitHubLabel("area/flyway")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -541,7 +541,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaMailer_shouldMapToIntegration() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:mailer")
+                new GitHubLabel("area/mailer")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -552,7 +552,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaVault_shouldMapToIntegration() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:vault")
+                new GitHubLabel("area/vault")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -563,7 +563,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaScheduler_shouldMapToScheduling() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:scheduler")
+                new GitHubLabel("area/scheduler")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -574,7 +574,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaQute_shouldMapToTemplating() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:qute")
+                new GitHubLabel("area/qute")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -585,7 +585,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaKogito_shouldMapToBusinessAutomation() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:kogito")
+                new GitHubLabel("area/kogito")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -596,7 +596,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaUI_shouldMapToUIUX() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:ui")
+                new GitHubLabel("area/ui")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);
@@ -607,7 +607,7 @@ class LabelMapperTest {
     @Test
     void mapLabels_withAreaFaultTolerance_shouldMapToObservability() {
         List<GitHubLabel> labels = Arrays.asList(
-                new GitHubLabel("area:fault-tolerance")
+                new GitHubLabel("area/fault-tolerance")
         );
 
         LabelMapper.LabelMappingResult result = labelMapper.mapLabels(labels);

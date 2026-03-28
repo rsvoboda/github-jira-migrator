@@ -42,7 +42,7 @@ class IssueMigrationServiceTest {
         bugIssue.setUser(new GitHubUser("testuser"));
         bugIssue.setLabels(Arrays.asList(
                 new GitHubLabel("bug"),
-                new GitHubLabel("priority:high")
+                new GitHubLabel("priority/high")
         ));
         bugIssue.setCreatedAt(Instant.now());
 
@@ -65,7 +65,7 @@ class IssueMigrationServiceTest {
         featureIssue.setUser(new GitHubUser("testuser"));
         featureIssue.setLabels(Arrays.asList(
                 new GitHubLabel("enhancement"),
-                new GitHubLabel("area:ui")
+                new GitHubLabel("area/ui")
         ));
         featureIssue.setCreatedAt(Instant.now());
 
@@ -87,7 +87,7 @@ class IssueMigrationServiceTest {
         issue.setUser(new GitHubUser("testuser"));
         issue.setLabels(Arrays.asList(
                 new GitHubLabel("bug"),
-                new GitHubLabel("area:frontend")
+                new GitHubLabel("area/frontend")
         ));
         issue.setCreatedAt(Instant.now());
 
@@ -96,7 +96,7 @@ class IssueMigrationServiceTest {
         assertNotNull(result.getOriginalLabels());
         assertEquals(2, result.getOriginalLabels().size());
         assertTrue(result.getOriginalLabels().contains("bug"));
-        assertTrue(result.getOriginalLabels().contains("area:frontend"));
+        assertTrue(result.getOriginalLabels().contains("area/frontend"));
     }
 
     @Test
@@ -108,7 +108,7 @@ class IssueMigrationServiceTest {
         priorityIssue.setState("open");
         priorityIssue.setHtmlUrl("https://github.com/owner/repo/issues/5");
         priorityIssue.setUser(new GitHubUser("testuser"));
-        priorityIssue.setLabels(Arrays.asList(new GitHubLabel("priority:high")));
+        priorityIssue.setLabels(Arrays.asList(new GitHubLabel("priority/high")));
         priorityIssue.setCreatedAt(Instant.now());
 
         AnalysisResult result = issueAnalyzer.analyze(priorityIssue);
@@ -127,8 +127,8 @@ class IssueMigrationServiceTest {
         issue.setUser(new GitHubUser("testuser"));
         issue.setLabels(Arrays.asList(
                 new GitHubLabel("bug"),
-                new GitHubLabel("area:ui"),
-                new GitHubLabel("priority:medium"),
+                new GitHubLabel("area/ui"),
+                new GitHubLabel("priority/medium"),
                 new GitHubLabel("security")
         ));
         issue.setCreatedAt(Instant.now());
