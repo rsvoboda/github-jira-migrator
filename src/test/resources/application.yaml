@@ -1,0 +1,13 @@
+quarkus:
+  http:
+    port: 8081
+    test-port: 8081
+
+github:
+  api:
+    token: ""
+
+migration:
+  analysis:
+    default-type: TASK
+    confidence-threshold: 0.5

@@ -1,0 +1,35 @@
+quarkus:
+  application:
+    name: github-jira-migrator
+  
+  http:
+    port: 8080
+    host: 0.0.0.0
+  
+  rest-client:
+    github-api:
+      url: https://api.github.com
+      scope: jakarta.inject.Singleton
+
+github:
+  api:
+    base-url: https://api.github.com
+    token: ${GITHUB_TOKEN:}
+
+migration:
+  analysis:
+    default-type: TASK
+    confidence-threshold: 0.5
+
+"%dev":
+  quarkus:
+    http:
+      port: 8080
+
+"%test":
+  quarkus:
+    http:
+      port: 8081
+  github:
+    api:
+      token: ""
