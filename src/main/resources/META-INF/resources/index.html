@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub to JIRA Migration Analyzer</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.js"></script>
+    <style>
+        body { background-color: #f5f5f5; padding-top: 40px; }
+        .masthead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; padding: 60px 0 !important; margin-bottom: 30px; }
+        .masthead h1 { color: white !important; font-size: 3em !important; }
+        .masthead p { color: rgba(255,255,255,0.9) !important; font-size: 1.2em !important; }
+        .result-card { margin-bottom: 20px; }
+        .confidence-bar { height: 20px; border-radius: 4px; background-color: #e0e0e0; overflow: hidden; }
+        .confidence-fill { height: 100%; transition: width 0.3s ease; }
+        .confidence-high { background-color: #21ba45; }
+        .confidence-medium { background-color: #fbbd08; }
+        .confidence-low { background-color: #db2828; }
+        .component-tag { display: inline-block; padding: 5px 10px; margin: 2px; background-color: #e1e1e1; border-radius: 4px; font-size: 0.9em; }
+        .label-tag { display: inline-block; padding: 3px 8px; margin: 2px; background-color: #2185d0; color: white; border-radius: 4px; font-size: 0.85em; }
+    </style>
+</head>
+<body>
+    <div class="ui container">
+        <div class="masthead ui segment">
+            <h1 class="ui center aligned header">
+                <i class="github alternate icon"></i>
+                GitHub to JIRA Migration
+            </h1>
+            <p class="center aligned">Analyze GitHub issues and migrate them to JIRA</p>
+        </div>
+
+        <div class="ui segment">
+            <h2 class="ui header"><i class="search icon"></i> Analyze Issue</h2>
+            <div class="ui form" id="analyzeForm">
+                <div class="three fields">
+                    <div class="field">
+                        <label>Repository Owner</label>
+                        <input type="text" id="owner" placeholder="e.g., quarkusio" value="quarkusio">
+                    </div>
+                    <div class="field">
+                        <label>Repository Name</label>
+                        <input type="text" id="repo" placeholder="e.g., quarkus" value="quarkus">
+                    </div>
+                    <div class="field">
+                        <label>Issue Number</label>
+                        <input type="number" id="issueNumber" placeholder="e.g., 40000" value="45000">
+                    </div>
+                </div>
+                <button class="ui primary button" id="analyzeBtn">
+                    <i class="analytics icon"></i> Analyze
+                </button>
+            </div>
+        </div>
+
+        <div id="resultsContainer"></div>
+
+        <div class="ui segment">
+            <h2 class="ui header"><i class="list icon"></i> Batch Analysis</h2>
+            <div class="ui form" id="batchForm">
+                <div class="fields">
+                    <div class="four wide field">
+                        <label>Repository Owner</label>
+                        <input type="text" id="batchOwner" placeholder="quarkusio" value="quarkusio">
+                    </div>
+                    <div class="four wide field">
+                        <label>Repository Name</label>
+                        <input type="text" id="batchRepo" placeholder="quarkus" value="quarkus">
+                    </div>
+                    <div class="four wide field">
+                        <label>State</label>
+                        <select class="ui dropdown" id="batchState">
+                            <option value="open">Open</option>
+                            <option value="closed">Closed</option>
+                            <option value="all">All</option>
+                        </select>
+                    </div>
+                    <div class="four wide field">
+                        <label>Limit</label>
+                        <input type="number" id="batchLimit" value="10" min="1" max="100">
+                    </div>
+                </div>
+                <button class="ui primary button" id="batchAnalyzeBtn">
+                    <i class="list icon"></i> Analyze Repository
+                </button>
+            </div>
+            <div id="batchResults"></div>
+        </div>
+    </div>
+
+    <script>
+    const API_BASE = '/api/v1/analyze';
+
+    document.getElementById('analyzeBtn').addEventListener('click', function() {
+        const owner = document.getElementById('owner').value;
+        const repo = document.getElementById('repo').value;
+        const issueNumber = document.getElementById('issueNumber').value;
+
+        if (!owner || !repo || !issueNumber) {
+            alert('Please fill in all fields');
+            return;
+        }
+
+        document.getElementById('resultsContainer').innerHTML = '<div class="ui segment"><div class="ui active loader"></div></div>';
+        
+        fetch(API_BASE + '/issue?owner=' + owner + '&repo=' + repo + '&issueNumber=' + issueNumber)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (!data.analyzedSuccessfully) {
+                    document.getElementById('resultsContainer').innerHTML = '<div class="ui negative message">' + (data.errorMessage || 'Failed to analyze issue') + '</div>';
+                    return;
+                }
+                renderResult(data);
+            })
+            .catch(function(error) {
+                document.getElementById('resultsContainer').innerHTML = '<div class="ui negative message">Error: ' + error.message + '</div>';
+            });
+    });
+
+    document.getElementById('batchAnalyzeBtn').addEventListener('click', function() {
+        const owner = document.getElementById('batchOwner').value;
+        const repo = document.getElementById('batchRepo').value;
+        const state = document.getElementById('batchState').value;
+        const limit = document.getElementById('batchLimit').value;
+
+        if (!owner || !repo) {
+            alert('Please fill in owner and repo');
+            return;
+        }
+
+        document.getElementById('batchResults').innerHTML = '<div class="ui segment"><div class="ui active loader"></div> Analyzing...</div>';
+        
+        fetch(API_BASE + '/repository', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ owner: owner, repo: repo, state: state, limit: parseInt(limit) })
+        })
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+            if (!data.totalAnalyzed) {
+                document.getElementById('batchResults').innerHTML = '<div class="ui negative message">' + (data.error || 'Failed to analyze repository') + '</div>';
+                return;
+            }
+            renderBatchResults(data);
+        })
+        .catch(function(error) {
+            document.getElementById('batchResults').innerHTML = '<div class="ui negative message">Error: ' + error.message + '</div>';
+        });
+    });
+
+    function renderResult(result) {
+        var container = document.getElementById('resultsContainer');
+        var confidenceClass = getConfidenceClass(result.confidenceScore);
+        var confidencePercent = Math.round(result.confidenceScore * 100);
+
+        var componentsHtml = '';
+        if (result.suggestedComponents && result.suggestedComponents.length > 0) {
+            componentsHtml = result.suggestedComponents.map(function(c) { return '<span class="component-tag">' + c + '</span>'; }).join('');
+        } else {
+            componentsHtml = '<span class="component-tag" style="background:#eee">None</span>';
+        }
+
+        var labelsHtml = '';
+        if (result.suggestedLabels && result.suggestedLabels.length > 0) {
+            labelsHtml = result.suggestedLabels.map(function(l) { return '<span class="label-tag">' + l + '</span>'; }).join('');
+        } else {
+            labelsHtml = '<span style="color:#999">None</span>';
+        }
+
+        container.innerHTML = '<div class="ui segment result-card">' +
+            '<h3 class="ui header"><i class="file alternate icon"></i>Analysis Result <span class="ui ' + getIssueTypeColor(result.suggestedType) + ' label">' + (result.suggestedType || 'TASK') + '</span></h3>' +
+            '<table class="ui very basic table">' +
+            '<tbody>' +
+            '<tr><td width="150"><strong>Issue</strong></td><td><a href="' + result.issueUrl + '" target="_blank">#' + result.issueNumber + ': ' + result.issueTitle + '</a></td></tr>' +
+            '<tr><td><strong>State</strong></td><td><span class="ui ' + (result.issueState === 'open' ? 'green' : 'grey') + ' label">' + result.issueState + '</span></td></tr>' +
+            '<tr><td><strong>Author</strong></td><td>' + result.author + '</td></tr>' +
+            '<tr><td><strong>Confidence</strong></td><td><div class="confidence-bar"><div class="confidence-fill ' + confidenceClass + '" style="width:' + confidencePercent + '%"></div></div><small>' + confidencePercent + '% - ' + (result.confidenceScore < 0.5 ? 'May need review' : 'High confidence') + '</small></td></tr>' +
+            '<tr><td><strong>Priority</strong></td><td><span class="ui ' + getPriorityColor(result.suggestedPriority) + ' label">' + (result.suggestedPriority || 'Medium') + '</span></td></tr>' +
+            '<tr><td><strong>Components</strong></td><td>' + componentsHtml + '</td></tr>' +
+            '<tr><td><strong>Labels</strong></td><td>' + labelsHtml + '</td></tr>' +
+            '<tr><td><strong>Reasoning</strong></td><td>' + (result.reasoning || 'No reasoning available') + '</td></tr>' +
+            '</tbody></table></div>';
+    }
+
+    function renderBatchResults(data) {
+        var container = document.getElementById('batchResults');
+        var html = '<div class="ui segment"><h4 class="ui header">Results: ' + data.totalAnalyzed + ' issues analyzed <span class="ui green label">' + data.successful + ' successful</span> <span class="ui red label">' + data.failed + ' failed</span></h4><div class="ui relaxed divided list">';
+
+        data.results.forEach(function(result) {
+            var confidenceClass = getConfidenceClass(result.confidenceScore);
+            html += '<div class="item"><i class="large ' + (result.analyzedSuccessfully ? 'green check' : 'red times') + ' icon"></i><div class="content"><a class="header" href="' + result.issueUrl + '" target="_blank">#' + result.issueNumber + ': ' + result.issueTitle + '</a><div class="description"><span class="ui ' + getIssueTypeColor(result.suggestedType) + ' tiny label">' + (result.suggestedType || 'TASK') + '</span> <span class="ui ' + confidenceClass + ' tiny label">' + Math.round(result.confidenceScore * 100) + '%</span>';
+            if (result.suggestedComponents) {
+                html += result.suggestedComponents.map(function(c) { return '<span class="component-tag">' + c + '</span>'; }).join('');
+            }
+            html += '</div></div></div>';
+        });
+
+        html += '</div></div>';
+        container.innerHTML = html;
+    }
+
+    function getConfidenceClass(score) {
+        if (score >= 0.7) return 'confidence-high';
+        if (score >= 0.5) return 'confidence-medium';
+        return 'confidence-low';
+    }
+
+    function getIssueTypeColor(type) {
+        switch(type) {
+            case 'BUG': return 'red';
+            case 'STORY': return 'green';
+            case 'EPIC': return 'purple';
+            default: return 'blue';
+        }
+    }
+
+    function getPriorityColor(priority) {
+        switch(priority) {
+            case 'HIGH': return 'red';
+            case 'MEDIUM': return 'orange';
+            case 'LOW': return 'green';
+            default: return 'grey';
+        }
+    }
+    </script>
+</body>
+</html>

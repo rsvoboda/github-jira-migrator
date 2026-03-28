@@ -1,9 +1,10 @@
 # GitHub to JIRA Migration Analyzer
 
-A Quarkus-based application that analyzes GitHub issues to determine appropriate JIRA issue configurations (type, labels, components) for migration. This initial version focuses on analysis only without creating actual JIRA issues.
+A Quarkus-based application that analyzes GitHub issues to determine appropriate JIRA issue configurations (type, labels, components) for migration.
 
 ## Features
 
+- **Web UI**: User-friendly interface to analyze GitHub issues
 - **GitHub Issue Fetching**: Retrieve issues from any public GitHub repository
 - **Intelligent Type Detection**: Automatically classifies issues as Bug, Story, Task, or Epic based on content analysis
 - **Label Mapping**: Maps GitHub labels to JIRA labels and components using configurable rules
@@ -35,7 +36,14 @@ mvn quarkus:dev
 
 The application will start at `http://localhost:8080`
 
-### 3. Run the JAR
+### 3. Web UI
+
+Open your browser to `http://localhost:8080` to access the web interface where you can:
+- Analyze single GitHub issues
+- Batch analyze repository issues
+- View detailed analysis results with suggested type, components, labels, and priority
+
+### 4. Run the JAR
 
 ```bash
 java -jar target/quarkus-app/quarkus-run.jar
@@ -331,7 +339,9 @@ github-jira-migrator/
 │   │   │   ├── resource/       # REST endpoints
 │   │   │   └── service/        # Business logic
 │   │   └── resources/
-│   │       └── application.yaml
+│   │       ├── application.yaml
+│   │       └── META-INF/resources/
+│   │           └── index.html  # Web UI
 │   └── test/                   # Unit tests
 └── SPEC.md                     # Detailed specification
 ```
