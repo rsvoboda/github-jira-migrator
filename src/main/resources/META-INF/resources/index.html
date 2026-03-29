@@ -310,7 +310,7 @@
             '<tbody>' +
             '<tr><td width="150"><strong>Issue</strong></td><td><a href="' + result.issueUrl + '" target="_blank">#' + result.issueNumber + ': ' + result.issueTitle + '</a></td></tr>' +
             '<tr><td><strong>State</strong></td><td><span class="ui ' + (result.issueState === 'open' ? 'green' : 'grey') + ' label">' + result.issueState + '</span></td></tr>' +
-            '<tr><td><strong>Author</strong></td><td>' + result.author + '</td></tr>' +
+            '<tr><td><strong>Author</strong></td><td>' + (result.authorAvatarUrl ? '<img class="ui avatar image" src="' + result.authorAvatarUrl + '" style="width:24px;height:24px;margin-right:8px;">' : '') + result.author + '</td></tr>' +
             '<tr><td><strong>Confidence</strong></td><td><div class="confidence-bar"><div class="confidence-fill ' + confidenceClass + '" style="width:' + confidencePercent + '%"></div></div><small>' + confidencePercent + '% - ' + (result.confidenceScore < 0.5 ? 'May need review' : 'High confidence') + '</small></td></tr>' +
             '<tr><td><strong>Priority</strong></td><td><span class="ui ' + getPriorityColor(result.suggestedPriority) + ' label">' + (result.suggestedPriority || 'Medium') + '</span></td></tr>' +
             '<tr><td><strong>Components</strong></td><td>' + componentsHtml + '</td></tr>' +

@@ -12,6 +12,7 @@ public class AnalysisResult {
     private String issueUrl;
     private String issueState;
     private String author;
+    private String authorAvatarUrl;
     private Instant createdAt;
     private List<String> originalLabels;
     
@@ -37,6 +38,7 @@ public class AnalysisResult {
         result.setIssueUrl(issue.getHtmlUrl());
         result.setIssueState(issue.getState());
         result.setAuthor(issue.getUser() != null ? issue.getUser().getLogin() : null);
+        result.setAuthorAvatarUrl(issue.getUser() != null ? issue.getUser().getAvatarUrl() : null);
         result.setCreatedAt(issue.getCreatedAt());
         if (issue.getLabels() != null) {
             result.setOriginalLabels(issue.getLabels().stream()
@@ -92,6 +94,14 @@ public class AnalysisResult {
 
     public void setAuthor(String author) {
         this.author = author;
+    }
+
+    public String getAuthorAvatarUrl() {
+        return authorAvatarUrl;
+    }
+
+    public void setAuthorAvatarUrl(String authorAvatarUrl) {
+        this.authorAvatarUrl = authorAvatarUrl;
     }
 
     public Instant getCreatedAt() {
