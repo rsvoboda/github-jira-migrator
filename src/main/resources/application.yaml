@@ -16,6 +16,12 @@ github:
     base-url: https://api.github.com
     token: ${GITHUB_TOKEN:}
 
+jira:
+  base-url: ${JIRA_BASE_URL:}
+  username: ${JIRA_USERNAME:}
+  api-token: ${JIRA_API_TOKEN:}
+  default-project-key: ${JIRA_PROJECT_KEY:}
+
 migration:
   analysis:
     default-type: TASK

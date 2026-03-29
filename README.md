@@ -56,6 +56,10 @@ java -jar target/quarkus-app/quarkus-run.jar
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `GITHUB_TOKEN` | GitHub Personal Access Token for API rate limits | (none) |
+| `JIRA_BASE_URL` | JIRA instance base URL (e.g., https://your-domain.atlassian.net) | - |
+| `JIRA_USERNAME` | JIRA email address | - |
+| `JIRA_API_TOKEN` | JIRA API token | - |
+| `JIRA_PROJECT_KEY` | Default JIRA project key | - |
 
 ### application.yaml
 
@@ -176,6 +180,73 @@ curl -X POST "http://localhost:8080/api/v1/analyze/repository" \
       ...
     }
   ]
+}
+```
+
+### Migrate Issue to JIRA
+
+Migrate a GitHub issue to JIRA based on the analysis.
+
+**Endpoint:** `POST /api/v1/analyze/issue/{issueNumber}/migrate`
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `issueNumber` | integer | Yes | GitHub issue number |
+| `owner` | string | Yes | Repository owner |
+| `repo` | string | Yes | Repository name |
+| `projectKey` | string | Yes | JIRA project key |
+
+**Example:**
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/analyze/issue/40000/migrate?owner=quarkusio&repo=quarkus&projectKey=QUARKUS"
+```
+
+**Response:**
+
+```json
+{
+  "githubIssue": 40000,
+  "jiraIssueKey": "QUARKUS-123",
+  "jiraIssueUrl": "https://your-domain.atlassian.net/rest/api/3/issue/12345",
+  "analysis": {
+    "issueNumber": 40000,
+    "suggestedType": "BUG",
+    "suggestedComponents": ["Core"],
+    ...
+  }
+}
+```
+
+### Migrate Issue to JIRA (Alternative)
+
+Create a JIRA issue from parameters.
+
+**Endpoint:** `POST /api/v1/analyze/issue/migrate`
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectKey` | string | Yes | JIRA project key |
+| `summary` | string | Yes | Issue summary |
+| `description` | string | No | Issue description |
+| `issueType` | string | No | Issue type (Bug, Task, Story, etc.) |
+| `labels` | string | No | Comma-separated labels |
+| `priority` | string | No | Priority (High, Medium, Low) |
+
+**Example:**
+
+```bash
+curl -X POST "http://localhost:8080/api/v1/analyze/issue/migrate?projectKey=QUARKUS&summary=Test+Issue&description=Test+description&issueType=Bug&priority=High"
+```
+
+**Response:**
+
+```json
+{
+  "jiraIssueKey": "QUARKUS-124",
+  "jiraIssueUrl": "https://your-domain.atlassian.net/rest/api/3/issue/12346"
 }
 ```
 

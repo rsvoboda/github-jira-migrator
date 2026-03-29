@@ -1,8 +1,10 @@
 package com.migrator.resource;
 
+import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.migrator.model.analysis.AnalysisResult;
 import com.migrator.model.analysis.RepositoryAnalysisRequest;
 import com.migrator.service.IssueMigrationService;
+import com.migrator.service.JiraMigrationService;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -21,6 +23,9 @@ public class AnalysisResource {
 
     @Inject
     IssueMigrationService migrationService;
+
+    @Inject
+    JiraMigrationService jiraMigrationService;
 
     @GET
     @Path("/issue")
@@ -95,5 +100,93 @@ public class AnalysisResource {
                 .orElse(Response.status(Response.Status.BAD_REQUEST)
                         .entity(Map.of("error", "Invalid GitHub issue URL"))
                         .build());
+    }
+
+    @POST
+    @Path("/issue/{issueNumber}/migrate")
+    public Response migrateIssueToJira(
+            @PathParam("issueNumber") Integer issueNumber,
+            @QueryParam("owner") String owner,
+            @QueryParam("repo") String repo,
+            @QueryParam("projectKey") String projectKey) {
+
+        if (owner == null || repo == null || issueNumber == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "owner, repo, and issueNumber are required"))
+                    .build();
+        }
+
+        if (projectKey == null || projectKey.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "projectKey is required"))
+                    .build();
+        }
+
+        LOG.infof("Migrating issue %s/%s#%d to JIRA project %s", owner, repo, issueNumber, projectKey);
+
+        AnalysisResult analysisResult = migrationService.analyzeIssue(owner, repo, issueNumber);
+        if (!analysisResult.isAnalyzedSuccessfully()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "Failed to analyze GitHub issue", "details", analysisResult.getErrorMessage()))
+                    .build();
+        }
+
+        try {
+            BasicIssue jiraIssue = jiraMigrationService.createIssueFromAnalysis(analysisResult, projectKey);
+            return Response.ok(Map.of(
+                    "githubIssue", analysisResult.getIssueNumber(),
+                    "jiraIssueKey", jiraIssue.getKey(),
+                    "jiraIssueUrl", jiraIssue.getSelf(),
+                    "analysis", analysisResult
+            )).build();
+        } catch (Exception e) {
+            LOG.errorf(e, "Failed to migrate issue to JIRA");
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("error", "Failed to create JIRA issue", "details", e.getMessage()))
+                    .build();
+        }
+    }
+
+    @POST
+    @Path("/issue/migrate")
+    public Response migrateIssueToJira(
+            @QueryParam("projectKey") String projectKey,
+            @QueryParam("summary") String summary,
+            @QueryParam("description") String description,
+            @QueryParam("issueType") String issueType,
+            @QueryParam("components") String components,
+            @QueryParam("labels") String labels,
+            @QueryParam("priority") String priority) {
+
+        if (projectKey == null || projectKey.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "projectKey is required"))
+                    .build();
+        }
+
+        if (summary == null || summary.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "summary is required"))
+                    .build();
+        }
+
+        try {
+            List<String> componentList = components != null ? List.of(components.split(",")) : null;
+            List<String> labelList = labels != null ? List.of(labels.split(",")) : null;
+
+            BasicIssue jiraIssue = jiraMigrationService.createIssue(
+                    projectKey, summary, description, issueType, 
+                    componentList, labelList, priority);
+
+            return Response.ok(Map.of(
+                    "jiraIssueKey", jiraIssue.getKey(),
+                    "jiraIssueUrl", jiraIssue.getSelf()
+            )).build();
+        } catch (Exception e) {
+            LOG.errorf(e, "Failed to create JIRA issue");
+            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                    .entity(Map.of("error", "Failed to create JIRA issue", "details", e.getMessage()))
+                    .build();
+        }
     }
 }
