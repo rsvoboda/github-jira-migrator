@@ -35,7 +35,7 @@
         <div class="ui segment">
             <h2 class="ui header"><i class="search icon"></i> Analyze Issue</h2>
             <div class="ui form" id="analyzeForm">
-                <div class="three fields">
+                <div class="four fields">
                     <div class="field">
                         <label>Repository Owner</label>
                         <input type="text" id="owner" placeholder="e.g., quarkusio" value="quarkusio">
@@ -48,14 +48,72 @@
                         <label>Issue Number</label>
                         <input type="number" id="issueNumber" placeholder="e.g., 40000" value="45000">
                     </div>
+                    <div class="field">
+                        <label>JIRA Project Key</label>
+                        <input type="text" id="projectKey" placeholder="e.g., QUARKUS" value="">
+                    </div>
                 </div>
                 <button class="ui primary button" id="analyzeBtn">
                     <i class="analytics icon"></i> Analyze
+                </button>
+                <button class="ui green button" id="migrateBtn">
+                    <i class="arrow right icon"></i> Migrate to JIRA
                 </button>
             </div>
         </div>
 
         <div id="resultsContainer"></div>
+        <div id="migrationResult"></div>
+
+        <div class="ui segment">
+            <h2 class="ui header"><i class="plus icon"></i> Create JIRA Issue</h2>
+            <div class="ui form" id="createForm">
+                <div class="three fields">
+                    <div class="field">
+                        <label>JIRA Project Key</label>
+                        <input type="text" id="createProjectKey" placeholder="e.g., QUARKUS">
+                    </div>
+                    <div class="field">
+                        <label>Issue Type</label>
+                        <select class="ui dropdown" id="createIssueType">
+                            <option value="Task" selected>Task</option>
+                            <option value="Bug">Bug</option>
+                            <option value="Story">Story</option>
+                            <option value="Epic">Epic</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Priority</label>
+                        <select class="ui dropdown" id="createPriority">
+                            <option value="Blocker">Blocker</option>
+                            <option value="Critical">Critical</option>
+                            <option value="Major" selected>Major</option>
+                            <option value="Minor">Minor</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Summary</label>
+                    <input type="text" id="createSummary" placeholder="Issue summary">
+                </div>
+                <div class="field">
+                    <label>Description</label>
+                    <textarea id="createDescription" rows="3" placeholder="Issue description"></textarea>
+                </div>
+                <div class="field">
+                    <label>Components (comma-separated)</label>
+                    <input type="text" id="createComponents" placeholder="e.g., Documentation, Core">
+                </div>
+                <div class="field">
+                    <label>Labels (comma-separated)</label>
+                    <input type="text" id="createLabels" placeholder="e.g., bug, priority-high">
+                </div>
+                <button class="ui green button" id="createBtn">
+                    <i class="plus icon"></i> Create Issue
+                </button>
+            </div>
+            <div id="createResult"></div>
+        </div>
 
         <div class="ui segment">
             <h2 class="ui header"><i class="list icon"></i> Batch Analysis</h2>
@@ -91,6 +149,9 @@
     </div>
 
     <script>
+    var currentAnalysis = null;
+    var currentProjectKey = '';
+
     const API_BASE = '/api/v1/analyze';
 
     document.getElementById('analyzeBtn').addEventListener('click', function() {
@@ -112,10 +173,81 @@
                     document.getElementById('resultsContainer').innerHTML = '<div class="ui negative message">' + (data.errorMessage || 'Failed to analyze issue') + '</div>';
                     return;
                 }
+                currentAnalysis = data;
+                document.getElementById('projectKey').value = document.getElementById('projectKey').value || '';
                 renderResult(data);
             })
             .catch(function(error) {
                 document.getElementById('resultsContainer').innerHTML = '<div class="ui negative message">Error: ' + error.message + '</div>';
+            });
+    });
+
+    document.getElementById('migrateBtn').addEventListener('click', function() {
+        const owner = document.getElementById('owner').value;
+        const repo = document.getElementById('repo').value;
+        const issueNumber = document.getElementById('issueNumber').value;
+        const projectKey = document.getElementById('projectKey').value;
+
+        if (!owner || !repo || !issueNumber) {
+            alert('Please analyze an issue first');
+            return;
+        }
+
+        if (!projectKey) {
+            alert('Please enter a JIRA project key');
+            return;
+        }
+
+        document.getElementById('migrationResult').innerHTML = '<div class="ui segment"><div class="ui active loader"></div> Migrating to JIRA...</div>';
+        
+        fetch(API_BASE + '/issue/' + issueNumber + '/migrate?owner=' + owner + '&repo=' + repo + '&projectKey=' + projectKey, { method: 'POST' })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    document.getElementById('migrationResult').innerHTML = '<div class="ui negative message">' + data.error + (data.details ? ': ' + data.details : '') + '</div>';
+                    return;
+                }
+                document.getElementById('migrationResult').innerHTML = '<div class="ui success message"><i class="check icon"></i><strong>Successfully migrated!</strong><br>JIRA Issue: <a href="' + data.jiraIssueUrl + '" target="_blank">' + data.jiraIssueKey + '</a></div>';
+            })
+            .catch(function(error) {
+                document.getElementById('migrationResult').innerHTML = '<div class="ui negative message">Error: ' + error.message + '</div>';
+            });
+    });
+
+    document.getElementById('createBtn').addEventListener('click', function() {
+        const projectKey = document.getElementById('createProjectKey').value;
+        const summary = document.getElementById('createSummary').value;
+        const description = document.getElementById('createDescription').value;
+        const issueType = document.getElementById('createIssueType').value;
+        const priority = document.getElementById('createPriority').value;
+        const components = document.getElementById('createComponents').value;
+        const labels = document.getElementById('createLabels').value;
+
+        if (!projectKey || !summary) {
+            alert('Please enter project key and summary');
+            return;
+        }
+
+        document.getElementById('createResult').innerHTML = '<div class="ui segment"><div class="ui active loader"></div> Creating issue...</div>';
+        
+        var url = API_BASE + '/issue/migrate?projectKey=' + projectKey + '&summary=' + encodeURIComponent(summary);
+        if (description) url += '&description=' + encodeURIComponent(description);
+        if (issueType) url += '&issueType=' + issueType;
+        if (priority) url += '&priority=' + priority;
+        if (components) url += '&components=' + encodeURIComponent(components);
+        if (labels) url += '&labels=' + encodeURIComponent(labels);
+
+        fetch(url, { method: 'POST' })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                if (data.error) {
+                    document.getElementById('createResult').innerHTML = '<div class="ui negative message">' + data.error + (data.details ? ': ' + data.details : '') + '</div>';
+                    return;
+                }
+                document.getElementById('createResult').innerHTML = '<div class="ui success message"><i class="check icon"></i><strong>Issue created!</strong><br>JIRA Issue: <a href="' + data.jiraIssueUrl + '" target="_blank">' + data.jiraIssueKey + '</a></div>';
+            })
+            .catch(function(error) {
+                document.getElementById('createResult').innerHTML = '<div class="ui negative message">Error: ' + error.message + '</div>';
             });
     });
 

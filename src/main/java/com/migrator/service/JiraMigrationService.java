@@ -4,6 +4,7 @@ import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.domain.BasicIssue;
 import com.atlassian.jira.rest.client.api.domain.Issue;
 import com.atlassian.jira.rest.client.api.domain.IssueType;
+import com.atlassian.jira.rest.client.api.domain.Priority;
 import com.atlassian.jira.rest.client.api.domain.Project;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInput;
 import com.atlassian.jira.rest.client.api.domain.input.IssueInputBuilder;
@@ -17,6 +18,8 @@ import org.jboss.logging.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @ApplicationScoped
@@ -83,6 +86,19 @@ public class JiraMigrationService {
                 builder.setDescription(description);
             }
 
+            if (components != null && !components.isEmpty()) {
+                builder.setComponentsNames(components);
+            }
+
+            if (labels != null && !labels.isEmpty()) {
+                builder.setFieldValue("labels", labels);
+            }
+
+            if (priority != null && !priority.isEmpty()) {
+                Optional<Priority> priorityObj = findPriorityByName(restClient, priority);
+                priorityObj.ifPresent(builder::setPriority);
+            }
+
             IssueInput issueInput = builder.build();
             BasicIssue issue = restClient.getIssueClient().createIssue(issueInput).claim();
             
@@ -99,6 +115,20 @@ public class JiraMigrationService {
             if (it.getName().equalsIgnoreCase(name)) {
                 return Optional.of(it);
             }
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Priority> findPriorityByName(JiraRestClient restClient, String name) {
+        try {
+            Iterable<Priority> priorities = restClient.getMetadataClient().getPriorities().claim();
+            for (Priority p : priorities) {
+                if (p.getName().equalsIgnoreCase(name)) {
+                    return Optional.of(p);
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Failed to get priorities: " + e.getMessage());
         }
         return Optional.empty();
     }
