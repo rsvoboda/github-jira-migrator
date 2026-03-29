@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Migration History - GitHub to JIRA</title>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fomantic-ui@2.9.3/dist/semantic.min.js"></script>
+    <style>
+        body { background-color: #f5f5f5; padding-top: 40px; }
+        .masthead { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; color: white !important; padding: 40px 0 !important; margin-bottom: 30px; }
+        .masthead h1 { color: white !important; font-size: 2.5em !important; }
+        .masthead p { color: rgba(255,255,255,0.9) !important; }
+        .history-card { margin-bottom: 15px; }
+        .status-success { color: #21ba45; }
+        .status-failed { color: #db2828; }
+        .timestamp { color: #999; font-size: 0.85em; }
+    </style>
+</head>
+<body>
+    <div class="ui container">
+        <div class="masthead ui segment">
+            <h1 class="ui center aligned header">
+                <i class="history icon"></i>
+                Migration History
+            </h1>
+            <p class="center aligned">Audit trail of all GitHub to JIRA migrations</p>
+        </div>
+
+        <div class="ui segment">
+            <div class="ui form">
+                <div class="three fields">
+                    <div class="field">
+                        <label>Filter by Project Key</label>
+                        <input type="text" id="filterProjectKey" placeholder="e.g., QUARKUS">
+                    </div>
+                    <div class="field" style="padding-top: 24px;">
+                        <button class="ui primary button" id="filterBtn">
+                            <i class="filter icon"></i> Filter
+                        </button>
+                        <button class="ui button" id="clearFilterBtn">
+                            <i class="times icon"></i> Clear
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ui segment">
+            <h3 class="ui header">
+                <i class="list icon"></i>
+                Migration Records
+                <span class="ui label" id="totalCount">0</span>
+            </h3>
+            <div id="historyContainer">
+                <div class="ui segment">
+                    <div class="ui active loader"></div> Loading history...
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px;">
+            <a href="/" class="ui button">
+                <i class="arrow left icon"></i> Back to Analyzer
+            </a>
+        </div>
+    </div>
+
+    <script>
+    const API_BASE = '/api/v1/analyze';
+
+    function loadHistory(projectKey) {
+        var url = API_BASE + '/history';
+        if (projectKey) {
+            url += '?projectKey=' + projectKey;
+        }
+
+        document.getElementById('historyContainer').innerHTML = '<div class="ui segment"><div class="ui active loader"></div> Loading history...</div>';
+
+        fetch(url)
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                renderHistory(data);
+            })
+            .catch(function(error) {
+                document.getElementById('historyContainer').innerHTML = '<div class="ui negative message">Error: ' + error.message + '</div>';
+            });
+    }
+
+    function renderHistory(data) {
+        var container = document.getElementById('historyContainer');
+        document.getElementById('totalCount').textContent = data.total || 0;
+
+        if (!data.migrations || data.migrations.length === 0) {
+            container.innerHTML = '<div class="ui message">No migration history found.</div>';
+            return;
+        }
+
+        var html = '<div class="ui very relaxed divided list">';
+        
+        data.migrations.forEach(function(record) {
+            var statusClass = record.status === 'SUCCESS' ? 'status-success' : 'status-failed';
+            var statusLabel = record.status === 'SUCCESS' ? 'green' : 'red';
+            var statusIcon = record.status === 'SUCCESS' ? 'check circle' : 'times circle';
+            
+            var componentsHtml = '';
+            if (record.suggestedComponents && record.suggestedComponents.length > 0) {
+                componentsHtml = record.suggestedComponents.map(function(c) { 
+                    return '<span class="ui tiny label" style="background:#eee;margin:2px;">' + c + '</span>'; 
+                }).join('');
+            }
+
+            var timestamp = record.timestamp ? new Date(record.timestamp).toLocaleString() : 'N/A';
+
+            html += '<div class="item history-card">' +
+                '<i class="large ' + statusIcon + ' ' + statusClass + ' icon"></i>' +
+                '<div class="content">' +
+                '<div class="header">' +
+                '<span class="ui ' + statusLabel + ' tiny label">' + record.status + '</span> ' +
+                (record.jiraIssueKey ? '<a href="' + record.jiraIssueUrl + '" target="_blank">' + record.jiraIssueKey + '</a>' : 'Failed') +
+                '</div>' +
+                '<div class="description">' +
+                '<table class="ui very basic table">' +
+                '<tbody>' +
+                '<tr><td width="120"><strong>GitHub Issue</strong></td><td><a href="' + record.githubIssueUrl + '" target="_blank">' + record.githubIssueNumber + '</a> (' + record.githubRepo + ')</td></tr>' +
+                '<tr><td><strong>Project</strong></td><td>' + record.jiraProjectKey + '</td></tr>' +
+                '<tr><td><strong>Type</strong></td><td><span class="ui tiny label">' + (record.suggestedType || 'Task') + '</span> ' + componentsHtml + '</td></tr>' +
+                '<tr><td><strong>Time</strong></td><td class="timestamp">' + timestamp + '</td></tr>';
+            
+            if (record.errorMessage) {
+                html += '<tr><td><strong>Error</strong></td><td style="color:#db2828;">' + record.errorMessage + '</td></tr>';
+            }
+            
+            html += '</tbody></table>' +
+                '</div></div></div>';
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    document.getElementById('filterBtn').addEventListener('click', function() {
+        var projectKey = document.getElementById('filterProjectKey').value;
+        loadHistory(projectKey);
+    });
+
+    document.getElementById('clearFilterBtn').addEventListener('click', function() {
+        document.getElementById('filterProjectKey').value = '';
+        loadHistory();
+    });
+
+    loadHistory();
+    </script>
+</body>
+</html>

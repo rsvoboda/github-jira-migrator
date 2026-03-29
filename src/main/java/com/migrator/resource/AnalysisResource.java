@@ -5,6 +5,8 @@ import com.migrator.model.analysis.AnalysisResult;
 import com.migrator.model.analysis.RepositoryAnalysisRequest;
 import com.migrator.service.IssueMigrationService;
 import com.migrator.service.JiraMigrationService;
+import com.migrator.service.MigrationHistoryService;
+import com.migrator.service.MigrationHistoryService.MigrationRecord;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -26,6 +28,9 @@ public class AnalysisResource {
 
     @Inject
     JiraMigrationService jiraMigrationService;
+
+    @Inject
+    MigrationHistoryService historyService;
 
     @GET
     @Path("/issue")
@@ -125,7 +130,18 @@ public class AnalysisResource {
         LOG.infof("Migrating issue %s/%s#%d to JIRA project %s", owner, repo, issueNumber, projectKey);
 
         AnalysisResult analysisResult = migrationService.analyzeIssue(owner, repo, issueNumber);
+
+        MigrationRecord record = new MigrationRecord();
+        record.setGithubIssueUrl("https://github.com/" + owner + "/" + repo + "/issues/" + issueNumber);
+        record.setGithubIssueNumber(String.valueOf(issueNumber));
+        record.setGithubRepo(owner + "/" + repo);
+        record.setJiraProjectKey(projectKey);
+        record.setSuggestedType(analysisResult.getSuggestedType() != null ? analysisResult.getSuggestedType().name() : "Task");
+        record.setSuggestedComponents(analysisResult.getSuggestedComponents());
         if (!analysisResult.isAnalyzedSuccessfully()) {
+            record.setStatus("FAILED");
+            record.setErrorMessage("Analysis failed: " + analysisResult.getErrorMessage());
+            historyService.recordMigration(record);
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("error", "Failed to analyze GitHub issue", "details", analysisResult.getErrorMessage()))
                     .build();
@@ -133,13 +149,20 @@ public class AnalysisResource {
 
         try {
             BasicIssue jiraIssue = jiraMigrationService.createIssueFromAnalysis(analysisResult, projectKey);
+            record.setStatus("SUCCESS");
+            record.setJiraIssueKey(jiraIssue.getKey());
+            record.setJiraIssueUrl(jiraMigrationService.getBrowseUrl(jiraIssue.getKey()));
+            historyService.recordMigration(record);
             return Response.ok(Map.of(
                     "githubIssue", analysisResult.getIssueNumber(),
                     "jiraIssueKey", jiraIssue.getKey(),
-                    "jiraIssueUrl", jiraIssue.getSelf(),
+                    "jiraIssueUrl", jiraMigrationService.getBrowseUrl(jiraIssue.getKey()),
                     "analysis", analysisResult
             )).build();
         } catch (Exception e) {
+            record.setStatus("FAILED");
+            record.setErrorMessage(e.getMessage());
+            historyService.recordMigration(record);
             LOG.errorf(e, "Failed to migrate issue to JIRA");
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
                     .entity(Map.of("error", "Failed to create JIRA issue", "details", e.getMessage()))
@@ -180,7 +203,7 @@ public class AnalysisResource {
 
             return Response.ok(Map.of(
                     "jiraIssueKey", jiraIssue.getKey(),
-                    "jiraIssueUrl", jiraIssue.getSelf()
+                    "jiraIssueUrl", jiraMigrationService.getBrowseUrl(jiraIssue.getKey())
             )).build();
         } catch (Exception e) {
             LOG.errorf(e, "Failed to create JIRA issue");
@@ -188,5 +211,20 @@ public class AnalysisResource {
                     .entity(Map.of("error", "Failed to create JIRA issue", "details", e.getMessage()))
                     .build();
         }
+    }
+
+    @GET
+    @Path("/history")
+    public Response getMigrationHistory(@QueryParam("projectKey") String projectKey) {
+        List<MigrationRecord> history;
+        if (projectKey != null && !projectKey.isEmpty()) {
+            history = historyService.getHistoryByProject(projectKey);
+        } else {
+            history = historyService.getHistory();
+        }
+        return Response.ok(Map.of(
+                "total", history.size(),
+                "migrations", history
+        )).build();
     }
 }

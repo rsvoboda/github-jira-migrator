@@ -12,6 +12,7 @@ A Quarkus-based application that analyzes GitHub issues to determine appropriate
 - **Confidence Scoring**: Provides confidence scores for analysis recommendations
 - **Batch Processing**: Analyze multiple issues from a repository at once
 - **REST API**: Easy integration with CI/CD pipelines and automation tools
+- **Migration History**: In-memory audit trail for all migrations
 
 ## Prerequisites
 
@@ -267,6 +268,51 @@ curl http://localhost:8080/api/v1/analyze/health
 }
 ```
 
+### Migration History
+
+View migration history via web UI: `http://localhost:8080/history.html`
+
+Or retrieve programmatically via API:
+
+**Endpoint:** `GET /api/v1/analyze/history`
+
+**Query Parameters:**
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `projectKey` | string | No | Filter by JIRA project key |
+
+**Example:**
+
+```bash
+# Get all migrations
+curl "http://localhost:8080/api/v1/analyze/history"
+
+# Get migrations for specific project
+curl "http://localhost:8080/api/v1/analyze/history?projectKey=QUARKUS"
+```
+
+**Response:**
+
+```json
+{
+  "total": 2,
+  "migrations": [
+    {
+      "githubIssueUrl": "https://github.com/quarkusio/quarkus/issues/40000",
+      "githubIssueNumber": "40000",
+      "githubRepo": "quarkusio/quarkus",
+      "jiraIssueKey": "QUARKUS-123",
+      "jiraIssueUrl": "https://your-domain.atlassian.net/browse/QUARKUS-123",
+      "jiraProjectKey": "QUARKUS",
+      "suggestedType": "BUG",
+      "suggestedComponents": ["Bug Fixes"],
+      "status": "SUCCESS",
+      "timestamp": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+```
+
 ## Issue Type Detection
 
 The analyzer uses keyword matching and pattern recognition to determine the appropriate JIRA issue type:
@@ -419,10 +465,10 @@ github-jira-migrator/
 
 ## Future Enhancements
 
-- [ ] JIRA issue creation (actual migration)
+- [x] JIRA issue creation (actual migration)
 - [ ] Custom label mapping configuration via API
-- [ ] Webhook support for automatic issue analysis
-- [ ] Migration history and audit trail
+- [ ] Webhook support for automatic issue analysis (receive GitHub webhooks when issues are created/updated)
+- [x] Migration history and audit trail
 - [ ] Batch export to JIRA CSV format
 - [ ] GitHub Actions integration
 

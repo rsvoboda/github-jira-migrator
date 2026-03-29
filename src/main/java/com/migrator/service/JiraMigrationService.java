@@ -171,4 +171,11 @@ public class JiraMigrationService {
 
         return sb.toString();
     }
+
+    public String getBrowseUrl(String issueKey) {
+        if (jiraBaseUrl == null || jiraBaseUrl.isEmpty()) {
+            return null;
+        }
+        return jiraBaseUrl + "/browse/" + issueKey;
+    }
 }
